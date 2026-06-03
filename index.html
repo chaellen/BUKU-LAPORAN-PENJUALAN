@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Buku Jual">
 <meta name="theme-color" content="#ffffff">
 <title>Buku Jual Obat</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.19.0/webfont/tabler-icons.min.css">
 <style>
 :root{--bg:#fff;--bg2:#f5f5f4;--text:#1a1917;--text2:#6b6b68;--text3:#9b9b97;--bdr:rgba(0,0,0,.12);--bdr2:rgba(0,0,0,.2);--green:#16a34a;--gbg:#f0fdf4;--red:#dc2626;--rbg:#fef2f2;--ylw:#d97706;--ybg:#fffbeb;--blue:#2563eb;--bbg:#eff6ff;--r:8px;--rl:12px}
 @media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--text:#f5f5f0;--text2:#a0a09c;--text3:#6b6b68;--bdr:rgba(255,255,255,.12);--bdr2:rgba(255,255,255,.22)}}
@@ -18,7 +18,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .tab-bar{display:flex;border-bottom:0.5px solid var(--bdr);background:var(--bg);flex-shrink:0;z-index:20}
 .tab{flex:1;padding:10px 4px 8px;text-align:center;font-size:11px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;user-select:none}
 .tab.active{color:var(--text);border-bottom-color:var(--text);font-weight:600}
-.tab i{display:block;font-size:20px;margin-bottom:2px}
+.tab-icon{display:block;font-size:18px;margin-bottom:2px}
 .panels{flex:1;overflow:hidden}
 .panel{display:none;height:100%;overflow-y:auto;padding:14px 12px 40px;-webkit-overflow-scrolling:touch}
 .panel.active{display:block}
@@ -27,11 +27,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .field label{display:block;font-size:12px;color:var(--text2);margin-bottom:3px}
 .field input,.field select{width:100%;padding:9px 10px;font-size:15px;border:0.5px solid var(--bdr2);border-radius:var(--r);background:var(--bg);color:var(--text);-webkit-appearance:none}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.item-card{background:var(--bg2);border-radius:var(--r);padding:11px;margin-bottom:9px}
+.item-card{background:var(--bg2);border-radius:var(--r);padding:11px;margin-bottom:9px;border:0.5px solid var(--bdr)}
 .item-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
 .item-num{font-size:11px;font-weight:600;color:var(--text3)}
-.btn-del-item{background:none;border:none;color:var(--red);cursor:pointer;font-size:20px;padding:2px;line-height:1}
-.item-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn-del-item{background:var(--rbg);border:0.5px solid var(--red);color:var(--red);cursor:pointer;font-size:12px;padding:4px 10px;border-radius:6px;font-weight:600}
 .item-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .if label{font-size:11px;color:var(--text2);display:block;margin-bottom:3px}
 .if input,.if select{width:100%;padding:7px 9px;font-size:14px;border:0.5px solid var(--bdr2);border-radius:var(--r);background:var(--bg);color:var(--text);-webkit-appearance:none}
@@ -45,8 +44,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .tbar{background:var(--bg2);border-radius:var(--r);padding:11px 13px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
 .tbar .tl{font-size:13px;color:var(--text2)}
 .tbar .tv{font-size:17px;font-weight:700}
-.btn-sub{width:100%;padding:13px;background:var(--text);color:var(--bg);border:none;border-radius:var(--r);font-size:15px;font-weight:600;cursor:pointer}
+.btn-sub{width:100%;padding:13px;background:var(--text);color:var(--bg);border:none;border-radius:var(--r);font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px}
 .btn-sub:active{opacity:.8}
+.btn-reset{width:100%;padding:10px;background:none;color:var(--text2);border:0.5px solid var(--bdr2);border-radius:var(--r);font-size:13px;cursor:pointer}
 .scards{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px}
 .sc{background:var(--bg2);border-radius:var(--r);padding:11px}
 .sc .sl{font-size:11px;color:var(--text2);margin-bottom:3px}
@@ -69,7 +69,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .sr{display:flex;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--bdr);gap:8px}
 .sr:last-child{border-bottom:none}
 .srn{flex:1;font-size:13px}
-.btn-dls{background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;padding:3px;line-height:1}
+.btn-dls{background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;padding:3px 7px;border-radius:5px;background:var(--rbg)}
 .btn-eh{background:var(--bbg);color:var(--blue);border:none;border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer;font-weight:600}
 .ehna{display:none;align-items:center;gap:7px;padding:5px 0}
 .ehna input{flex:1;padding:7px 9px;font-size:14px;border:0.5px solid var(--bdr2);border-radius:var(--r);background:var(--bg);color:var(--text)}
@@ -96,7 +96,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100;white-space:nowrap;font-weight:600}
 .toast.show{opacity:1}
 .empty{text-align:center;padding:48px 20px;color:var(--text3);font-size:14px}
-.empty i{font-size:44px;display:block;margin-bottom:10px}
 .dlg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;display:none;align-items:center;justify-content:center;padding:20px}
 .dlg.open{display:flex}
 .dlgbox{background:var(--bg);border-radius:var(--rl);padding:20px;width:100%;max-width:300px;text-align:center}
@@ -111,9 +110,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 <body>
 <div class="app">
   <div class="tab-bar">
-    <div class="tab active" onclick="sw('input')" id="tab-input"><i class="ti ti-plus"></i>Input</div>
-    <div class="tab" onclick="sw('history')" id="tab-history"><i class="ti ti-list"></i>Riwayat</div>
-    <div class="tab" onclick="sw('settings')" id="tab-settings"><i class="ti ti-database"></i>Data</div>
+    <div class="tab active" onclick="sw('input')" id="tab-input"><span class="tab-icon">+</span>Input</div>
+    <div class="tab" onclick="sw('history')" id="tab-history"><span class="tab-icon">&#9776;</span>Riwayat</div>
+    <div class="tab" onclick="sw('settings')" id="tab-settings"><span class="tab-icon">&#9881;</span>Data</div>
   </div>
   <div class="panels">
     <div class="panel active" id="panel-input">
@@ -125,9 +124,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       </div>
       <p class="sec-title" style="margin-top:4px">Produk</p>
       <div id="icards"></div>
-      <button class="btn-add-item" onclick="addItem()"><i class="ti ti-plus"></i>Tambah produk</button>
+      <button class="btn-add-item" onclick="addItem()">+ Tambah produk lain</button>
       <div class="tbar"><span class="tl">Total keuntungan</span><span class="tv" id="ttl">Rp 0</span></div>
       <button class="btn-sub" onclick="submitSale()">Simpan transaksi</button>
+      <button class="btn-reset" onclick="resetForm()">Batal / Reset form</button>
     </div>
     <div class="panel" id="panel-history">
       <div class="scards">
@@ -141,7 +141,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div class="ss">
         <p class="sec-title">Outlet</p>
         <div id="olist"></div>
-        <button class="btn-adds" onclick="togRow('add-ol')"><i class="ti ti-plus"></i>Tambah outlet</button>
+        <button class="btn-adds" onclick="togRow('add-ol')">+ Tambah outlet</button>
         <div class="add-row" id="add-ol">
           <input type="text" id="nov" placeholder="Nama outlet baru">
           <button onclick="addOutlet()">Tambah</button>
@@ -150,7 +150,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div class="ss">
         <p class="sec-title">Diskon supplier (%)</p>
         <div id="dlist"></div>
-        <button class="btn-adds" onclick="togRow('add-dl')"><i class="ti ti-plus"></i>Tambah nilai diskon</button>
+        <button class="btn-adds" onclick="togRow('add-dl')">+ Tambah nilai diskon</button>
         <div class="add-row" id="add-dl">
           <input type="number" id="ndv" placeholder="Misal: 75">
           <button onclick="addDiskon()">Tambah</button>
@@ -159,7 +159,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div class="ss">
         <p class="sec-title">Produk &amp; HNA <span style="font-weight:400;font-size:10px">(tap angka HNA untuk edit)</span></p>
         <div id="plist"></div>
-        <button class="btn-adds" onclick="togProd()"><i class="ti ti-plus"></i>Tambah produk baru</button>
+        <button class="btn-adds" onclick="togProd()">+ Tambah produk baru</button>
         <div class="add-prod-form" id="add-prod-form">
           <input type="text" id="npn" placeholder="Nama produk baru">
           <input type="number" id="nph" placeholder="HNA (boleh kosong)">
@@ -175,7 +175,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <div class="mhndl"></div>
     <div class="mtit" id="mt"></div>
     <div id="mb"></div>
-    <button class="btn-delsale" onclick="cfDel()"><i class="ti ti-trash"></i> Hapus transaksi ini</button>
+    <button class="btn-delsale" onclick="cfDel()">Hapus transaksi ini</button>
     <button class="btn-clsm" onclick="cmb()">Tutup</button>
   </div>
 </div>
@@ -256,7 +256,7 @@ function addItem() {
   c.innerHTML =
     '<div class="item-card-head">' +
       '<span class="item-num">Produk #' + n + '</span>' +
-      '<button class="btn-del-item" onclick="rmItem(\'' + id + '\')"><i class="ti ti-trash"></i></button>' +
+      '<button class="btn-del-item" onclick="rmItem(\'' + id + '\')">&#10005; Hapus baris</button>' +
     '</div>' +
     '<div class="if" style="margin-bottom:8px"><label>Nama produk</label>' +
       '<select onchange="onPC(this,\'' + id + '\')">' +
@@ -264,10 +264,10 @@ function addItem() {
       '</select>' +
     '</div>' +
     '<div class="item-row3">' +
-      '<div class="if"><label>HNA (otomatis)</label>' +
+      '<div class="if"><label>HNA</label>' +
         '<input type="number" id="' + id + '-h" placeholder="0" readonly style="background:var(--bg2);color:var(--text2)">' +
       '</div>' +
-      '<div class="if"><label>Diskon supplier</label>' +
+      '<div class="if"><label>Diskon</label>' +
         '<select id="' + id + '-d" onchange="calc(\'' + id + '\')">' +
           '<option value="">--%--</option>' + dko +
         '</select>' +
@@ -282,7 +282,7 @@ function addItem() {
     '<div class="item-calc">' +
       '<div class="cr"><span>Modal/pcs</span><span id="' + id + '-cm">-</span></div>' +
       '<div class="cr"><span>Diskon Rp</span><span id="' + id + '-cd">-</span></div>' +
-      '<div class="cr"><span>% Diskon ke outlet</span><span id="' + id + '-cp">-</span></div>' +
+      '<div class="cr"><span>% Diskon outlet</span><span id="' + id + '-cp">-</span></div>' +
       '<div class="cr"><span>Untung/pcs</span><span id="' + id + '-cu">-</span></div>' +
       '<div class="cr full"><span>Total untung</span><span id="' + id + '-ct">-</span></div>' +
     '</div>';
@@ -293,6 +293,16 @@ function addItem() {
 function rmItem(id) {
   var e = document.getElementById(id);
   if (e) { e.remove(); rnItem(); updTtl(); }
+}
+
+function resetForm() {
+  if (!window.confirm('Reset semua isian? Data yang belum disimpan akan hilang.')) return;
+  document.getElementById('io').value = '';
+  document.getElementById('ie').value = '';
+  document.getElementById('icards').innerHTML = '';
+  updTtl();
+  addItem();
+  toast('Form direset');
 }
 
 function rnItem() {
@@ -410,7 +420,7 @@ function rHist() {
   });
   var sl = document.getElementById('slist');
   if (!fl.length) {
-    sl.innerHTML = '<div class="empty"><i class="ti ti-clipboard-list"></i>Belum ada transaksi</div>';
+    sl.innerHTML = '<div class="empty">Belum ada transaksi</div>';
     return;
   }
   sl.innerHTML = fl.map(function(s) {
@@ -480,11 +490,11 @@ function doDel() {
 function rSet() {
   document.getElementById('olist').innerHTML = outlets.map(function(o, i) {
     return '<div class="sr"><span class="srn">' + o + '</span>' +
-      '<button class="btn-dls" onclick="delO(' + i + ')"><i class="ti ti-trash"></i></button></div>';
+      '<button class="btn-dls" onclick="delO(' + i + ')">Hapus</button></div>';
   }).join('');
   document.getElementById('dlist').innerHTML = discs.sort(function(a,b){return a-b;}).map(function(d, i) {
     return '<div class="sr"><span class="srn">' + d + '%</span>' +
-      '<button class="btn-dls" onclick="delD(' + i + ')"><i class="ti ti-trash"></i></button></div>';
+      '<button class="btn-dls" onclick="delD(' + i + ')">Hapus</button></div>';
   }).join('');
   document.getElementById('plist').innerHTML = getPRODS().map(function(p, i) {
     var hnaVal = hna[p] ? 'Rp ' + hna[p].toLocaleString('id-ID') : '—';
@@ -493,7 +503,7 @@ function rSet() {
         '<span class="srn" style="font-size:12px">' + p + '</span>' +
         '<div style="display:flex;gap:6px;align-items:center">' +
           '<button class="btn-eh" onclick="togEH(' + i + ')">' + hnaVal + '</button>' +
-          '<button class="btn-dls" onclick="delProd(' + i + ')"><i class="ti ti-trash"></i></button>' +
+          '<button class="btn-dls" onclick="delProd(' + i + ')">Hapus</button>' +
         '</div>' +
       '</div>' +
       '<div class="ehna" id="eh-' + i + '">' +
@@ -513,10 +523,7 @@ function togEH(i) {
 function svHna(i) {
   var p = getPRODS()[i];
   var v = parseFloat(document.getElementById('hi-' + i).value) || 0;
-  hna[p] = v;
-  sv();
-  rSet();
-  toast('HNA disimpan');
+  hna[p] = v; sv(); rSet(); toast('HNA disimpan');
 }
 
 function togProd() {
@@ -530,9 +537,7 @@ function addProd() {
   var h = parseFloat(document.getElementById('nph').value) || 0;
   if (!n) { toast('Nama produk tidak boleh kosong'); return; }
   if (hna[n] !== undefined) { toast('Produk sudah ada'); return; }
-  hna[n] = h;
-  sv();
-  rSet();
+  hna[n] = h; sv(); rSet();
   document.getElementById('npn').value = '';
   document.getElementById('nph').value = '';
   document.getElementById('add-prod-form').style.display = 'none';
@@ -543,10 +548,7 @@ function delProd(i) {
   var p = getPRODS()[i];
   if (!p) return;
   if (!window.confirm('Hapus produk ' + p + '?')) return;
-  delete hna[p];
-  sv();
-  rSet();
-  toast('Produk dihapus');
+  delete hna[p]; sv(); rSet(); toast('Produk dihapus');
 }
 
 function togRow(id) {
@@ -558,10 +560,7 @@ function togRow(id) {
 function addOutlet() {
   var v = document.getElementById('nov').value.trim();
   if (!v || outlets.includes(v)) { toast('Nama kosong atau sudah ada'); return; }
-  outlets.push(v);
-  sv();
-  popO();
-  rSet();
+  outlets.push(v); sv(); popO(); rSet();
   document.getElementById('nov').value = '';
   document.getElementById('add-ol').style.display = 'none';
   toast('Outlet ditambahkan');
@@ -572,9 +571,7 @@ function delO(i) { outlets.splice(i, 1); sv(); popO(); rSet(); }
 function addDiskon() {
   var v = parseFloat(document.getElementById('ndv').value);
   if (!v || discs.includes(v)) { toast('Tidak valid atau sudah ada'); return; }
-  discs.push(v);
-  sv();
-  rSet();
+  discs.push(v); sv(); rSet();
   document.getElementById('ndv').value = '';
   document.getElementById('add-dl').style.display = 'none';
   toast('Diskon ditambahkan');
@@ -588,17 +585,14 @@ function popO() {
   s.innerHTML = '<option value="">-- Pilih outlet --</option>';
   outlets.forEach(function(o) {
     var op = document.createElement('option');
-    op.value = o;
-    op.textContent = o;
-    s.appendChild(op);
+    op.value = o; op.textContent = o; s.appendChild(op);
   });
   if (cur) s.value = cur;
 }
 
 function toast(m) {
   var t = document.getElementById('toast');
-  t.textContent = m;
-  t.classList.add('show');
+  t.textContent = m; t.classList.add('show');
   setTimeout(function() { t.classList.remove('show'); }, 2200);
 }
 
