@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Buku Jual">
+<meta name="theme-color" content="#0f1117">
+<title>Pembukuan Penjualan</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.19.0/webfont/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;0,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1117;--bg2:#181c27;--bg3:#1e2334;--bdr:#2a3044;--bdr2:#3a4460;
+  --text:#e8eaf6;--text2:#9ba5c0;--text3:#5c6882;
+  --accent:#4f8ef7;--accent2:#38d9a9;
+  --green:#38d9a9;--gbg:rgba(56,217,169,.1);
+  --red:#ff6b6b;--rbg:rgba(255,107,107,.1);
+  --ylw:#ffd43b;--ybg:rgba(255,212,59,.1);
+  --blue:#4f8ef7;--bbg:rgba(79,142,247,.1);
+  --r:10px;--rl:14px;
+  --mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-size:14px}
+.app{max-width:430px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+
+/* TAB BAR */
+.tab-bar{display:flex;background:var(--bg2);border-bottom:1px solid var(--bdr);flex-shrink:0;z-index:20}
+.tab{flex:1;padding:10px 4px 9px;text-align:center;font-size:11px;font-weight:600;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;user-select:none;transition:all .2s}
+.tab i{display:block;font-size:19px;margin-bottom:2px}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* PANELS */
+.panels{flex:1;overflow:hidden}
+.panel{display:none;height:100%;overflow-y:auto;padding:14px 13px 48px;-webkit-overflow-scrolling:touch}
+.panel.active{display:block}
+
+/* TYPOGRAPHY */
+.sec-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px}
+
+/* FIELDS */
+.field{margin-bottom:11px}
+.field label,.if label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.if input,.if select{width:100%;padding:10px 12px;font-size:14px;border:1px solid var(--bdr);border-radius:var(--r);background:var(--bg3);color:var(--text);-webkit-appearance:none;font-family:'Sora',sans-serif;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus,.if input:focus,.if select:focus{border-color:var(--accent)}
+.field select,.if select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M0 0l5 7 5-7z' fill='%235c6882'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:28px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+input[readonly]{color:var(--accent2)!important;font-family:var(--mono)!important;font-weight:600}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator{filter:invert(.4)}
+
+/* ITEM CARDS */
+.item-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--rl);padding:13px;margin-bottom:10px;position:relative}
+.item-card::before{content:'';position:absolute;left:0;top:12px;bottom:12px;width:3px;background:var(--accent);border-radius:0 2px 2px 0}
+.item-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+.item-num{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
+.btn-del-item{background:var(--rbg);border:none;color:var(--red);cursor:pointer;font-size:15px;padding:5px 8px;border-radius:6px;line-height:1;display:flex;align-items:center;gap:3px}
+.item-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.if{margin-bottom:0}
+.item-calc{background:var(--bg);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 12px;margin-top:10px}
+.cr{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;border-bottom:1px solid var(--bdr)}
+.cr:last-child{border-bottom:none}
+.cr span:first-child{color:var(--text2)}
+.cr span:last-child{font-family:var(--mono);font-weight:600}
+.cp{color:var(--green)}.cl{color:var(--red)}.cy{color:var(--ylw)}.cb{color:var(--accent)}
+
+/* ADD ITEM BTN */
+.btn-add-item{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:11px;border:1.5px dashed var(--bdr2);border-radius:var(--r);background:none;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:13px;font-family:'Sora',sans-serif;transition:all .2s}
+.btn-add-item:active{background:var(--bg2)}
+
+/* TOTAL BAR */
+.tbar{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:13px 15px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.tbar .tl{font-size:12px;font-weight:600;color:var(--text2)}
+.tbar .tv{font-size:18px;font-weight:700;font-family:var(--mono)}
+
+/* SUBMIT */
+.btn-sub{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;letter-spacing:.2px}
+.btn-sub:active{opacity:.85;transform:scale(.99)}
+
+/* SUMMARY CARDS */
+.scards{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px}
+.sc{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:12px}
+.sc .sl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.sc .sv{font-size:17px;font-weight:700;font-family:var(--mono)}
+
+/* FILTER CHIPS */
+.hf{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.chip{padding:5px 13px;border-radius:20px;border:1px solid var(--bdr);font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);background:transparent;white-space:nowrap;font-family:'Sora',sans-serif;transition:all .2s}
+.chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* SALE CARDS */
+.scard{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--rl);padding:13px;margin-bottom:9px;cursor:pointer;transition:all .15s}
+.scard:active{opacity:.8;transform:scale(.99)}
+.sh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+.so{font-weight:700;font-size:15px}
+.sd{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.sp{font-size:12px;color:var(--text2);margin-bottom:7px;line-height:1.6}
+.sf{display:flex;justify-content:space-between;align-items:center}
+.spr{font-size:15px;font-weight:700;font-family:var(--mono)}
+.scnt{font-size:11px;color:var(--text3)}
+.bexp{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.bok{background:var(--gbg);color:var(--green)}.bwrn{background:var(--ybg);color:var(--ylw)}.bred{background:var(--rbg);color:var(--red)}
+
+/* SETTINGS */
+.ss{margin-bottom:20px}
+.sr{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr);gap:8px}
+.sr:last-child{border-bottom:none}
+.srn{flex:1;font-size:13px}
+.srh{font-size:11px;color:var(--text2);font-family:var(--mono);font-weight:600}
+.btn-dls{background:none;border:none;color:var(--red);cursor:pointer;font-size:17px;padding:4px;line-height:1}
+.btn-eh{background:var(--bbg);color:var(--blue);border:1px solid rgba(79,142,247,.25);border-radius:7px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:700;font-family:var(--mono)}
+.ehna{display:none;align-items:center;gap:7px;padding:7px 0 4px}
+.ehna input{flex:1;padding:8px 10px;font-size:14px;border:1px solid var(--bdr);border-radius:var(--r);background:var(--bg3);color:var(--text);font-family:'Sora',sans-serif}
+.ehna button{padding:8px 14px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:13px;cursor:pointer;font-weight:700;white-space:nowrap;font-family:'Sora',sans-serif}
+.btn-adds{display:flex;align-items:center;gap:5px;color:var(--accent);background:none;border:none;font-size:13px;cursor:pointer;padding:9px 0;font-weight:700;font-family:'Sora',sans-serif}
+.add-row{display:none;align-items:center;gap:7px;margin-top:7px}
+.add-row input{flex:1;padding:9px 11px;font-size:14px;border:1px solid var(--bdr);border-radius:var(--r);background:var(--bg3);color:var(--text);font-family:'Sora',sans-serif}
+.add-row button{padding:9px 14px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:13px;cursor:pointer;font-weight:700;white-space:nowrap;font-family:'Sora',sans-serif}
+
+/* MODAL */
+.mwrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:flex-end;justify-content:center}
+.mwrap.open{display:flex}
+.msheet{background:var(--bg2);border:1px solid var(--bdr);border-radius:18px 18px 0 0;padding:14px 15px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.mhndl{width:36px;height:4px;background:var(--bdr2);border-radius:2px;margin:0 auto 14px}
+.mtit{font-size:16px;font-weight:700;margin-bottom:13px}
+.mrow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:13px}
+.mrow:last-child{border-bottom:none}
+.mrow .mk{color:var(--text2)}
+.mrow .mv{font-family:var(--mono);font-weight:600}
+.msep{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:12px 0 5px;border-top:1px solid var(--bdr);margin-top:3px}
+.msep:first-child{border-top:none;margin-top:0;padding-top:0}
+.btn-delsale{width:100%;padding:11px;margin-top:11px;border:1px solid var(--red);background:var(--rbg);color:var(--red);border-radius:var(--r);font-size:14px;cursor:pointer;font-weight:700;font-family:'Sora',sans-serif}
+.btn-clsm{width:100%;padding:11px;margin-top:8px;border:1px solid var(--bdr);background:none;border-radius:var(--r);font-size:14px;cursor:pointer;color:var(--text);font-weight:600;font-family:'Sora',sans-serif}
+
+/* CONFIRM DIALOG */
+.dlg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60;display:none;align-items:center;justify-content:center;padding:20px}
+.dlg.open{display:flex}
+.dlgbox{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--rl);padding:22px 20px;width:100%;max-width:300px;text-align:center}
+.dlgbox h3{font-size:16px;font-weight:700;margin-bottom:8px}
+.dlgbox p{font-size:13px;color:var(--text2);margin-bottom:20px}
+.dlgbtns{display:flex;gap:10px}
+.dlgbtns button{flex:1;padding:12px;border-radius:var(--r);font-size:14px;cursor:pointer;font-weight:700;border:none;font-family:'Sora',sans-serif}
+.btn-nc{background:var(--bg3);color:var(--text)}
+.btn-cf{background:var(--red);color:#fff}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--bg2);border:1px solid var(--bdr2);color:var(--text);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:100;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* EMPTY */
+.empty{text-align:center;padding:52px 20px;color:var(--text3);font-size:14px}
+.empty i{font-size:48px;display:block;margin-bottom:12px;opacity:.5}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="tab-bar">
+    <div class="tab active" onclick="sw('input')" id="tab-input"><i class="ti ti-plus"></i>Input</div>
+    <div class="tab" onclick="sw('history')" id="tab-history"><i class="ti ti-list"></i>Riwayat</div>
+    <div class="tab" onclick="sw('rekap')" id="tab-rekap"><i class="ti ti-chart-bar"></i>Rekap</div>
+    <div class="tab" onclick="sw('settings')" id="tab-settings"><i class="ti ti-database"></i>Master</div>
+  </div>
+  <div class="panels">
+
+    <!-- ===== INPUT ===== -->
+    <div class="panel active" id="panel-input">
+      <p class="sec-title">Transaksi baru</p>
+      <div class="field"><label>Nama outlet</label><select id="io"><option value="">-- Pilih outlet --</option></select></div>
+      <div class="row2">
+        <div class="field"><label>Tanggal</label><input type="date" id="it"></div>
+        <div class="field"><label>Expired (bln/thn)</label><input type="month" id="ie"></div>
+      </div>
+      <p class="sec-title" style="margin-top:4px">Daftar Produk</p>
+      <div id="icards"></div>
+      <button class="btn-add-item" onclick="addItem()"><i class="ti ti-plus"></i>Tambah produk lain</button>
+      <div class="tbar">
+        <span class="tl">Total keuntungan transaksi</span>
+        <span class="tv" id="ttl">Rp 0</span>
+      </div>
+      <button class="btn-sub" onclick="submitSale()">Simpan transaksi</button>
+    </div>
+
+    <!-- ===== HISTORY ===== -->
+    <div class="panel" id="panel-history">
+      <div class="scards">
+        <div class="sc"><div class="sl">Total transaksi</div><div class="sv" id="stn">0</div></div>
+        <div class="sc"><div class="sl">Total keuntungan</div><div class="sv" id="stu" style="font-size:14px">Rp 0</div></div>
+      </div>
+      <div class="hf" id="hf"></div>
+      <div id="slist"></div>
+    </div>
+
+    <!-- ===== REKAP ===== -->
+    <div class="panel" id="panel-rekap">
+      <div class="scards">
+        <div class="sc"><div class="sl">Total transaksi</div><div class="sv" id="rtn">0</div></div>
+        <div class="sc"><div class="sl">Total keuntungan</div><div class="sv" id="rtu" style="font-size:14px">Rp 0</div></div>
+        <div class="sc"><div class="sl">Total produk terjual</div><div class="sv" id="rtp">0</div></div>
+        <div class="sc"><div class="sl">Avg/transaksi</div><div class="sv" id="rav" style="font-size:14px">Rp 0</div></div>
+      </div>
+      <div id="exp-sec" style="display:none;margin-bottom:13px">
+        <p class="sec-title" style="color:var(--red)"><i class="ti ti-alert-triangle"></i> Produk Perlu Perhatian</p>
+        <div id="exp-list"></div>
+      </div>
+      <p class="sec-title">Per Produk</p>
+      <div id="rprod-list"></div>
+    </div>
+
+    <!-- ===== SETTINGS ===== -->
+    <div class="panel" id="panel-settings">
+      <div class="ss">
+        <p class="sec-title">Outlet</p>
+        <div id="olist"></div>
+        <button class="btn-adds" onclick="tog('add-ol')"><i class="ti ti-plus"></i>Tambah outlet</button>
+        <div class="add-row" id="add-ol"><input type="text" id="nov" placeholder="Nama outlet baru"><button onclick="addOutlet()">Tambah</button></div>
+      </div>
+      <div class="ss">
+        <p class="sec-title">Diskon Supplier (%)</p>
+        <div id="dlist"></div>
+        <button class="btn-adds" onclick="tog('add-dl')"><i class="ti ti-plus"></i>Tambah nilai diskon</button>
+        <div class="add-row" id="add-dl"><input type="number" id="ndv" placeholder="Misal: 75"><button onclick="addDiskon()">Tambah</button></div>
+      </div>
+      <div class="ss">
+        <p class="sec-title">HNA Produk <span style="font-weight:400;font-size:10px;text-transform:none">(tap angka untuk edit)</span></p>
+        <div id="plist"></div>
+      </div>
+      <div class="ss">
+        <p class="sec-title">Data</p>
+        <button class="btn-sub" onclick="exportCSV()" style="margin-bottom:9px;background:var(--bg3);color:var(--text);font-size:13px;border:1px solid var(--bdr)"><i class="ti ti-download"></i> Export CSV</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- DETAIL MODAL -->
+<div class="mwrap" id="dm" onclick="cmo(event)">
+  <div class="msheet">
+    <div class="mhndl"></div>
+    <div class="mtit" id="mt"></div>
+    <div id="mb"></div>
+    <button class="btn-delsale" onclick="cfDel()"><i class="ti ti-trash"></i> Hapus transaksi ini</button>
+    <button class="btn-clsm" onclick="cmb()">Tutup</button>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="dlg" id="dlg">
+  <div class="dlgbox">
+    <h3>Hapus transaksi?</h3>
+    <p>Data tidak bisa dikembalikan.</p>
+    <div class="dlgbtns">
+      <button class="btn-nc" onclick="caDel()">Batal</button>
+      <button class="btn-cf" onclick="doDel()">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DEFAULT HNA DATA (dari file referensi) ──────────────────────────────────
+const DHNA = {
+  "BIOPLACENTON JELLY 15GR": 28000,
+  "CHOLESTAT 10MG 30'S": 0,
+  "CHOLESTAT 20MG 30'S": 0,
+  "DIVOLTAR 50MG TAB 50'S": 18000,
+  "KALCINOL N CREAM 5GR": 0,
+  "KALMETHASONE 200'S": 0,
+  "KALMICETINE 250MG 100'S": 0,
+  "KALMICETINE SALEP KULIT 15GR": 15000,
+  "KALMICETINE SYR 60ML": 0,
+  "MYCORAL 200MG 50'S": 225000,
+  "MYCORAL CREAM 5 GR": 18000,
+  "NEURALGIN RX(NEW) 100'S": 0,
+  "OTOLIN DROP 10 ML": 0,
+  "PLANTACID FORTE 100'S": 0,
+  "PLANTACID FORTE SUSP 100ML": 30000,
+  "PLANTACID SYR 100ML": 15000,
+  "PRONICY 4MG 100'S": 32000,
+  "VITAZYM PLUS 100 TAB": 90000
+};
+
+// ── STORAGE ──────────────────────────────────────────────────────────────────
+let outlets = JSON.parse(localStorage.getItem('bjo_o') || '["Nyoto","Daniel","Martha","Yani","Rajawali","Banaran"]');
+let discs   = JSON.parse(localStorage.getItem('bjo_d') || '[70,75,79,80,85]');
+let sales   = JSON.parse(localStorage.getItem('bjo_s') || '[]');
+let hna     = JSON.parse(localStorage.getItem('bjo_h') || JSON.stringify(DHNA));
+const PRODS = Object.keys(hna);
+let aFilter = null, curDIdx = null;
+
+function sv() {
+  localStorage.setItem('bjo_o', JSON.stringify(outlets));
+  localStorage.setItem('bjo_d', JSON.stringify(discs));
+  localStorage.setItem('bjo_s', JSON.stringify(sales));
+  localStorage.setItem('bjo_h', JSON.stringify(hna));
+}
+
+// ── FORMAT ───────────────────────────────────────────────────────────────────
+function fmt(n) {
+  if (n === null || n === undefined || isNaN(n)) return '-';
+  return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+}
+function fmtShort(n) {
+  if (!n && n !== 0) return '-';
+  const abs = Math.abs(n);
+  const sign = n < 0 ? '-' : '';
+  if (abs >= 1e6) return sign + 'Rp ' + (abs/1e6).toFixed(1) + 'jt';
+  if (abs >= 1e3) return sign + 'Rp ' + (abs/1e3).toFixed(0) + 'rb';
+  return sign + 'Rp ' + abs;
+}
+
+// ── TAB SWITCH ───────────────────────────────────────────────────────────────
+function sw(n) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + n).classList.add('active');
+  document.getElementById('panel-' + n).classList.add('active');
+  if (n === 'history') rHist();
+  if (n === 'rekap')   rRekap();
+  if (n === 'settings') rSet();
+}
+
+// ── INPUT: ADD ITEM CARD ─────────────────────────────────────────────────────
+function addItem() {
+  const id = 'i' + Date.now();
+  const n  = document.querySelectorAll('.item-card').length + 1;
+  const c  = document.createElement('div');
+  c.className = 'item-card'; c.id = id;
+
+  const dko = discs.slice().sort((a,b)=>a-b)
+    .map(d => `<option value="${d}">${d}%</option>`).join('');
+  const po = PRODS.map(p => `<option value="${p}">${p}</option>`).join('');
+
+  c.innerHTML = `
+    <div class="item-card-head">
+      <span class="item-num">Produk #${n}</span>
+      <button class="btn-del-item" onclick="rmItem('${id}')"><i class="ti ti-trash"></i> Hapus</button>
+    </div>
+    <div class="if" style="margin-bottom:9px">
+      <label>Nama Produk</label>
+      <select onchange="onPC(this,'${id}')">
+        <option value="">-- Pilih produk --</option>${po}
+      </select>
+    </div>
+    <div class="item-row2">
+      <div class="if">
+        <label>HNA (otomatis)</label>
+        <input type="number" id="${id}-h" placeholder="—" readonly>
+      </div>
+      <div class="if">
+        <label>Qty</label>
+        <input type="number" id="${id}-q" placeholder="1" value="1" min="1" oninput="calc('${id}')">
+      </div>
+    </div>
+    <div class="item-row2" style="margin-top:8px">
+      <div class="if">
+        <label>Diskon Supplier</label>
+        <select id="${id}-d" onchange="calc('${id}')">
+          <option value="">— %  —</option>${dko}
+        </select>
+      </div>
+      <div class="if">
+        <label>Harga Jual ke Outlet</label>
+        <input type="number" id="${id}-j" placeholder="0" oninput="calc('${id}')">
+      </div>
+    </div>
+    <div class="item-calc">
+      <div class="cr"><span>Modal (HNA - disc + PPN 11% + 5%)</span><span id="${id}-cm" class="cb">—</span></div>
+      <div class="cr"><span>Diskon Supplier (Rp)</span><span id="${id}-cd" class="cy">—</span></div>
+      <div class="cr"><span>% Diskon ke Outlet</span><span id="${id}-cp">—</span></div>
+      <div class="cr"><span>Keuntungan / unit</span><span id="${id}-cu">—</span></div>
+      <div class="cr"><span>Total Keuntungan (× Qty)</span><span id="${id}-ct">—</span></div>
+    </div>`;
+  document.getElementById('icards').appendChild(c);
+  rnItem();
+}
+
+function rmItem(id) {
+  const e = document.getElementById(id);
+  if (e) { e.remove(); rnItem(); updTtl(); }
+}
+function rnItem() {
+  document.querySelectorAll('.item-card').forEach((c,i) => {
+    c.querySelector('.item-num').textContent = 'Produk #' + (i+1);
+  });
+}
+
+// ── CALC ─────────────────────────────────────────────────────────────────────
+function onPC(sel, id) {
+  const p = sel.value;
+  const e = document.getElementById(id + '-h');
+  e.value = (p && hna[p] !== undefined && hna[p] > 0) ? hna[p] : '';
+  calc(id);
+}
+
+function calcModal(harga, dkPct) {
+  // Formula: (HNA - diskon_rupiah) × 1.11 × 1.05
+  const dr = harga * (dkPct / 100);
+  return (harga - dr) * 1.11 * 1.05;
+}
+
+function calc(id) {
+  const h = parseFloat(document.getElementById(id+'-h').value) || 0;
+  const d = parseFloat(document.getElementById(id+'-d').value) || 0;
+  const j = parseFloat(document.getElementById(id+'-j').value) || 0;
+  const q = parseFloat(document.getElementById(id+'-q').value) || 1;
+
+  const dr   = h * (d / 100);
+  const m    = calcModal(h, d);
+  const u    = j - m;
+  const ut   = u * q;
+  const pct  = (h > 0 && j > 0) ? ((h - j) / h * 100) : 0;
+
+  document.getElementById(id+'-cm').textContent = h > 0 ? fmt(m) : '—';
+  document.getElementById(id+'-cd').textContent = (h > 0 && d > 0) ? fmt(dr) : '—';
+  document.getElementById(id+'-cp').textContent = (h > 0 && j > 0) ? pct.toFixed(1)+'%' : '—';
+
+  const ue = document.getElementById(id+'-cu');
+  ue.textContent = (h > 0 && j > 0) ? fmt(u) : '—';
+  ue.className   = (h > 0 && j > 0) ? (u >= 0 ? 'cp' : 'cl') : '';
+
+  const te = document.getElementById(id+'-ct');
+  te.textContent = (h > 0 && j > 0) ? fmt(ut) : '—';
+  te.className   = (h > 0 && j > 0) ? (ut >= 0 ? 'cp' : 'cl') : '';
+
+  updTtl();
+}
+
+function gItem(id) {
+  const c = document.getElementById(id); if (!c) return null;
+  const p = c.querySelector('select').value;
+  const h = parseFloat(document.getElementById(id+'-h').value) || 0;
+  const d = parseFloat(document.getElementById(id+'-d').value) || 0;
+  const j = parseFloat(document.getElementById(id+'-j').value) || 0;
+  const q = parseFloat(document.getElementById(id+'-q').value) || 1;
+  const dr  = h * (d / 100);
+  const m   = calcModal(h, d);
+  const u   = j - m;
+  const pct = (h > 0 && j > 0) ? ((h - j) / h * 100) : 0;
+  return { prod:p, hna:h, dkPct:d, dkRp:dr, modal:m, jual:j, qty:q, untung:u, totalUntung:u*q, pctDk:pct };
+}
+
+function updTtl() {
+  let t = 0;
+  document.querySelectorAll('.item-card').forEach(c => {
+    const d = gItem(c.id);
+    if (d && d.jual > 0) t += d.untung * d.qty;
+  });
+  const e = document.getElementById('ttl');
+  e.textContent = fmt(t);
+  e.style.color = t >= 0 ? 'var(--green)' : 'var(--red)';
+}
+
+// ── SUBMIT ───────────────────────────────────────────────────────────────────
+function submitSale() {
+  const o   = document.getElementById('io').value;
+  const tgl = document.getElementById('it').value;
+  const exp = document.getElementById('ie').value;
+
+  if (!o) { toast('⚠️ Pilih outlet dulu'); return; }
+  const cards = document.querySelectorAll('.item-card');
+  if (!cards.length) { toast('⚠️ Tambah minimal 1 produk'); return; }
+
+  const items = []; let ok = true;
+  cards.forEach(c => {
+    const d = gItem(c.id);
+    if (!d || !d.prod) { ok = false; return; }
+    if (!d.jual) { ok = false; return; }
+    items.push(d);
+  });
+  if (!ok) { toast('⚠️ Lengkapi semua produk & harga jual'); return; }
+
+  const tu = items.reduce((a,i) => a + i.totalUntung, 0);
+  sales.unshift({ id:Date.now(), outlet:o, tanggal:tgl, expired:exp, items, totalUntung:tu });
+  sv();
+  toast('✅ Transaksi tersimpan!');
+
+  // reset
+  document.getElementById('io').value = '';
+  document.getElementById('ie').value = '';
+  document.getElementById('icards').innerHTML = '';
+  updTtl(); addItem();
+}
+
+// ── HISTORY ──────────────────────────────────────────────────────────────────
+function eCls(e) {
+  if (!e) return '';
+  const d = new Date(e+'-01'), n = new Date();
+  const df = (d - n) / (864e5 * 30);
+  return df < 0 ? 'bred' : df < 3 ? 'bwrn' : 'bok';
+}
+function eLbl(e) {
+  if (!e) return '';
+  const d = new Date(e+'-01'), n = new Date();
+  const df = (d - n) / (864e5 * 30);
+  return df < 0 ? 'Kadaluarsa' : df < 3 ? 'Segera EXP' : 'OK';
+}
+
+function rHist() {
+  const fl = aFilter ? sales.filter(s => s.outlet === aFilter) : sales;
+  const tu = fl.reduce((a,s) => a + (s.totalUntung || 0), 0);
+  document.getElementById('stn').textContent = fl.length;
+  const se = document.getElementById('stu');
+  se.textContent = fmtShort(tu);
+  se.style.color = tu >= 0 ? 'var(--green)' : 'var(--red)';
+
+  const hf = document.getElementById('hf');
+  hf.innerHTML = `<button class="chip${!aFilter?' active':''}" onclick="fltH(null,this)">Semua</button>`;
+  outlets.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (aFilter===o?' active':'');
+    b.textContent = o;
+    b.onclick = function(){ fltH(o,this); };
+    hf.appendChild(b);
+  });
+
+  const sl = document.getElementById('slist');
+  if (!fl.length) { sl.innerHTML='<div class="empty"><i class="ti ti-clipboard-list"></i>Belum ada transaksi</div>'; return; }
+  sl.innerHTML = fl.map((s,ri) => {
+    const idx = sales.indexOf(s);
+    const ec  = eCls(s.expired), el = eLbl(s.expired);
+    const pn  = (s.items||[]).map(i=>i.prod).join(' · ');
+    const pcnt= (s.items||[]).length;
+    return `<div class="scard" onclick="showDet(${idx})">
+      <div class="sh">
+        <div><div class="so">${s.outlet}</div><div class="sd">${s.tanggal||'—'}</div></div>
+        ${ec?`<span class="bexp ${ec}">${el}</span>`:''}
+      </div>
+      <div class="sp">${pn}</div>
+      <div class="sf">
+        <span class="spr" style="color:${(s.totalUntung||0)>=0?'var(--green)':'var(--red)'}">${fmt(s.totalUntung)}</span>
+        <span class="scnt">${pcnt} produk</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function fltH(o,el) {
+  aFilter = o;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  rHist();
+}
+
+// ── DETAIL MODAL ─────────────────────────────────────────────────────────────
+function showDet(idx) {
+  curDIdx = idx;
+  const s = sales[idx]; if (!s) return;
+  document.getElementById('mt').textContent = s.outlet + ' — ' + (s.tanggal||'—');
+  let h = '';
+  if (s.expired) {
+    const ec=eCls(s.expired), el=eLbl(s.expired);
+    h += `<div class="mrow"><span class="mk">Expired</span><span class="mv">${s.expired} <span class="bexp ${ec}">${el}</span></span></div>`;
+  }
+  (s.items||[]).forEach((it,i) => {
+    h += `<div class="msep">Produk ${i+1}: ${it.prod}</div>`;
+    h += `<div class="mrow"><span class="mk">HNA</span><span class="mv">${fmt(it.hna)}</span></div>`;
+    h += `<div class="mrow"><span class="mk">Diskon Supplier</span><span class="mv">${it.dkPct||0}% (${fmt(it.dkRp)})</span></div>`;
+    h += `<div class="mrow"><span class="mk">Modal (HNA→jadi)</span><span class="mv cb">${fmt(it.modal)}</span></div>`;
+    h += `<div class="mrow"><span class="mk">Harga Jual</span><span class="mv">${fmt(it.jual)}</span></div>`;
+    h += `<div class="mrow"><span class="mk">Qty</span><span class="mv">${it.qty||1}</span></div>`;
+    h += `<div class="mrow"><span class="mk">% Diskon ke Outlet</span><span class="mv">${it.pctDk?it.pctDk.toFixed(1)+'%':'—'}</span></div>`;
+    h += `<div class="mrow"><span class="mk">Keuntungan / unit</span><span class="mv ${(it.untung||0)>=0?'cp':'cl'}">${fmt(it.untung)}</span></div>`;
+    h += `<div class="mrow"><span class="mk">Total Keuntungan (× ${it.qty||1})</span><span class="mv ${(it.totalUntung||0)>=0?'cp':'cl'}">${fmt(it.totalUntung||it.untung)}</span></div>`;
+  });
+  h += `<div class="msep">Total Transaksi</div>`;
+  h += `<div class="mrow"><span class="mk" style="font-weight:700">Total Keuntungan</span><span class="mv ${(s.totalUntung||0)>=0?'cp':'cl'}" style="font-size:15px">${fmt(s.totalUntung)}</span></div>`;
+  document.getElementById('mb').innerHTML = h;
+  document.getElementById('dm').classList.add('open');
+}
+
+function cmo(e){ if(e.target===document.getElementById('dm')) cmb(); }
+function cmb(){ document.getElementById('dm').classList.remove('open'); }
+function cfDel(){ document.getElementById('dlg').classList.add('open'); }
+function caDel(){ document.getElementById('dlg').classList.remove('open'); }
+function doDel(){
+  if (curDIdx===null) return;
+  sales.splice(curDIdx,1); sv();
+  document.getElementById('dlg').classList.remove('open');
+  cmb(); rHist();
+  toast('🗑️ Transaksi dihapus');
+  curDIdx = null;
+}
+
+// ── REKAP ────────────────────────────────────────────────────────────────────
+function rRekap() {
+  const tu  = sales.reduce((a,s) => a+(s.totalUntung||0), 0);
+  const tp  = sales.reduce((a,s) => a+(s.items||[]).reduce((b,it)=>b+(it.qty||1),0), 0);
+  const avg = sales.length ? tu/sales.length : 0;
+  document.getElementById('rtn').textContent = sales.length;
+  const re = document.getElementById('rtu');
+  re.textContent = fmtShort(tu); re.style.color = tu>=0?'var(--green)':'var(--red)';
+  document.getElementById('rtp').textContent = tp;
+  const ae = document.getElementById('rav');
+  ae.textContent = fmtShort(avg); ae.style.color = avg>=0?'var(--green)':'var(--red)';
+
+  // Expired alerts
+  const today = new Date();
+  const expSales = sales.filter(s => {
+    if (!s.expired) return false;
+    const d = new Date(s.expired+'-01');
+    return (d-today)/(864e5*30) < 3;
+  });
+  const expSec = document.getElementById('exp-sec');
+  if (expSales.length) {
+    expSec.style.display = 'block';
+    document.getElementById('exp-list').innerHTML = expSales.map(s => {
+      const ec=eCls(s.expired), el=eLbl(s.expired);
+      return `<div style="background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 12px;margin-bottom:7px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          <span style="font-weight:700">${s.outlet}</span>
+          <span class="bexp ${ec}">${el}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text2)">${(s.items||[]).map(i=>i.prod).join(' · ')}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:3px">${s.tanggal||'—'} · exp: ${s.expired}</div>
+      </div>`;
+    }).join('');
+  } else { expSec.style.display='none'; }
+
+  // Per produk
+  const byProd = {};
+  sales.forEach(s => {
+    (s.items||[]).forEach(it => {
+      if (!it.prod) return;
+      if (!byProd[it.prod]) byProd[it.prod] = { trx:0, qty:0, untung:0 };
+      byProd[it.prod].trx++;
+      byProd[it.prod].qty += (it.qty||1);
+      byProd[it.prod].untung += (it.totalUntung || it.untung || 0);
+    });
+  });
+  const sorted = Object.entries(byProd).sort((a,b)=>b[1].untung-a[1].untung);
+  const rpl = document.getElementById('rprod-list');
+  if (!sorted.length) { rpl.innerHTML='<div class="empty" style="padding:20px 0"><i class="ti ti-package" style="font-size:28px"></i>Belum ada data</div>'; return; }
+  rpl.innerHTML = sorted.map(([p,v]) => `
+    <div style="background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 12px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:3px">${p}</div>
+        <div style="font-size:11px;color:var(--text2)">${v.trx}× transaksi · ${v.qty} unit terjual</div>
+      </div>
+      <div style="font-family:var(--mono);font-weight:700;font-size:13px;color:${v.untung>=0?'var(--green)':'var(--red)'}">${fmtShort(v.untung)}</div>
+    </div>`).join('');
+}
+
+// ── SETTINGS ────────────────────────────────────────────────────────────────
+function rSet() {
+  document.getElementById('olist').innerHTML = outlets.map((o,i) =>
+    `<div class="sr"><span class="srn">${o}</span><button class="btn-dls" onclick="delO(${i})"><i class="ti ti-trash"></i></button></div>`
+  ).join('');
+
+  document.getElementById('dlist').innerHTML = discs.slice().sort((a,b)=>a-b).map((d,i) =>
+    `<div class="sr"><span class="srn">${d}%</span><button class="btn-dls" onclick="delD(${i})"><i class="ti ti-trash"></i></button></div>`
+  ).join('');
+
+  document.getElementById('plist').innerHTML = PRODS.map((p,i) => `
+    <div>
+      <div class="sr" id="pr-${i}">
+        <span class="srn" style="font-size:12px">${p}</span>
+        <button class="btn-eh" onclick="togEH(${i})">${hna[p]?'Rp '+hna[p].toLocaleString('id-ID'):'—'}</button>
+      </div>
+      <div class="ehna" id="eh-${i}">
+        <input type="number" id="hi-${i}" value="${hna[p]||''}" placeholder="Masukkan HNA baru…">
+        <button onclick="svHna(${i},'${p.replace(/'/g,"\\'")}')">Simpan</button>
+      </div>
+    </div>`).join('');
+}
+
+function togEH(i) {
+  const r = document.getElementById('eh-'+i);
+  r.style.display = r.style.display==='flex' ? 'none' : 'flex';
+  if (r.style.display==='flex') document.getElementById('hi-'+i).focus();
+}
+function svHna(i,p) {
+  const v = parseFloat(document.getElementById('hi-'+i).value)||0;
+  hna[p] = v; sv(); rSet(); toast('✅ HNA disimpan');
+  document.querySelectorAll('.item-card').forEach(c => {
+    const s = c.querySelector('select');
+    if (s && s.value===p) { document.getElementById(c.id+'-h').value=v; calc(c.id); }
+  });
+}
+function tog(id) {
+  const r = document.getElementById(id);
+  r.style.display = r.style.display==='flex' ? 'none' : 'flex';
+  if (r.style.display==='flex') r.querySelector('input').focus();
+}
+function addOutlet() {
+  const v = document.getElementById('nov').value.trim();
+  if (!v || outlets.includes(v)) { toast('⚠️ Nama kosong atau sudah ada'); return; }
+  outlets.push(v); sv(); popO(); rSet();
+  document.getElementById('nov').value='';
+  document.getElementById('add-ol').style.display='none';
+  toast('✅ Outlet ditambahkan');
+}
+function delO(i) { outlets.splice(i,1); sv(); popO(); rSet(); }
+function addDiskon() {
+  const v = parseFloat(document.getElementById('ndv').value);
+  if (!v || discs.includes(v)) { toast('⚠️ Tidak valid atau sudah ada'); return; }
+  discs.push(v); sv(); rSet();
+  document.getElementById('ndv').value='';
+  document.getElementById('add-dl').style.display='none';
+  toast('✅ Diskon ditambahkan');
+}
+function delD(i) { discs.splice(i,1); sv(); rSet(); }
+function popO() {
+  const s = document.getElementById('io'), c = s.value;
+  s.innerHTML = '<option value="">-- Pilih outlet --</option>';
+  outlets.forEach(o => { const op=document.createElement('option'); op.value=o; op.textContent=o; s.appendChild(op); });
+  if (c) s.value = c;
+}
+
+// ── EXPORT CSV ───────────────────────────────────────────────────────────────
+function exportCSV() {
+  if (!sales.length) { toast('Belum ada data'); return; }
+  const rows = [['Tanggal','Outlet','Expired','Produk','HNA','Diskon%','DiskonRp','Modal','HargaJual','%DiscOutlet','Keuntungan','TotalUntungTrx']];
+  sales.forEach(s => {
+    (s.items||[]).forEach(it => {
+      rows.push([s.tanggal||'',s.outlet,s.expired||'',it.prod,it.hna,it.dkPct,Math.round(it.dkRp),Math.round(it.modal),it.jual,it.pctDk?it.pctDk.toFixed(1):'',Math.round(it.untung),Math.round(s.totalUntung)]);
+    });
+  });
+  const csv = '\uFEFF' + rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const b = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const u = URL.createObjectURL(b);
+  const a = document.createElement('a');
+  a.href=u; a.download='penjualan_'+new Date().toLocaleDateString('id-ID').replace(/\//g,'-')+'.csv';
+  a.click(); URL.revokeObjectURL(u);
+  toast('📤 CSV berhasil diexport');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let tTimer;
+function toast(m) {
+  const t = document.getElementById('toast');
+  t.textContent=m; t.classList.add('show');
+  clearTimeout(tTimer);
+  tTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.getElementById('it').value = new Date().toISOString().split('T')[0];
+popO(); addItem();
+</script>
+</body>
+</html>
