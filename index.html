@@ -31,6 +31,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .item-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
 .item-num{font-size:11px;font-weight:600;color:var(--text3)}
 .btn-del-item{background:var(--rbg);border:0.5px solid var(--red);color:var(--red);cursor:pointer;font-size:12px;padding:4px 10px;border-radius:6px;font-weight:600}
+.item-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .item-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .if label{font-size:11px;color:var(--text2);display:block;margin-bottom:3px}
 .if input,.if select{width:100%;padding:7px 9px;font-size:14px;border:0.5px solid var(--bdr2);border-radius:var(--r);background:var(--bg);color:var(--text);-webkit-appearance:none}
@@ -118,10 +119,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <div class="panel active" id="panel-input">
       <p class="sec-title">Transaksi baru</p>
       <div class="field"><label>Nama outlet</label><select id="io"><option value="">-- Pilih outlet --</option></select></div>
-      <div class="row2">
-        <div class="field"><label>Tanggal</label><input type="date" id="it"></div>
-        <div class="field"><label>Expired (opsional)</label><input type="month" id="ie"></div>
-      </div>
+      <div class="field"><label>Tanggal</label><input type="date" id="it"></div>
       <p class="sec-title" style="margin-top:4px">Produk</p>
       <div id="icards"></div>
       <button class="btn-add-item" onclick="addItem()">+ Tambah produk lain</button>
@@ -263,7 +261,15 @@ function addItem() {
         '<option value="">-- Pilih produk --</option>' + po +
       '</select>' +
     '</div>' +
-    '<div class="item-row3">' +
+    '<div class="item-row2" style="margin-bottom:8px">' +
+      '<div class="if"><label>Expired (wajib)</label>' +
+        '<input type="month" id="' + id + '-exp">' +
+      '</div>' +
+      '<div class="if"><label>Jumlah</label>' +
+        '<input type="number" id="' + id + '-q" value="1" min="1" oninput="calc(\'' + id + '\')">' +
+      '</div>' +
+    '</div>' +
+    '<div class="item-row2">' +
       '<div class="if"><label>HNA</label>' +
         '<input type="number" id="' + id + '-h" placeholder="0" readonly style="background:var(--bg2);color:var(--text2)">' +
       '</div>' +
@@ -272,11 +278,8 @@ function addItem() {
           '<option value="">--%--</option>' + dko +
         '</select>' +
       '</div>' +
-      '<div class="if"><label>Jumlah</label>' +
-        '<input type="number" id="' + id + '-q" value="1" min="1" oninput="calc(\'' + id + '\')">' +
-      '</div>' +
     '</div>' +
-    '<div class="if" style="margin-top:7px"><label>Harga jual ke outlet</label>' +
+    '<div class="if" style="margin-top:8px"><label>Harga jual ke outlet</label>' +
       '<input type="number" id="' + id + '-j" placeholder="0" oninput="calc(\'' + id + '\')">' +
     '</div>' +
     '<div class="item-calc">' +
@@ -298,7 +301,6 @@ function rmItem(id) {
 function resetForm() {
   if (!window.confirm('Reset semua isian? Data yang belum disimpan akan hilang.')) return;
   document.getElementById('io').value = '';
-  document.getElementById('ie').value = '';
   document.getElementById('icards').innerHTML = '';
   updTtl();
   addItem();
@@ -347,11 +349,12 @@ function gItem(id) {
   var d = parseFloat(document.getElementById(id + '-d').value) || 0;
   var j = parseFloat(document.getElementById(id + '-j').value) || 0;
   var q = parseFloat(document.getElementById(id + '-q').value) || 1;
+  var exp = document.getElementById(id + '-exp').value;
   var dr = h * (d / 100);
   var m = (h - dr) * 1.11 * 1.05;
   var u = j - m;
   var pct = (h > 0 && j > 0) ? ((h - j) / h * 100) : 0;
-  return { prod:p, hna:h, dkPct:d, dkRp:dr, modal:m, jual:j, qty:q, untung:u, untungTotal:u*q, pctDk:pct };
+  return { prod:p, hna:h, dkPct:d, dkRp:dr, modal:m, jual:j, qty:q, expired:exp, untung:u, untungTotal:u*q, pctDk:pct };
 }
 
 function updTtl() {
@@ -368,24 +371,24 @@ function updTtl() {
 function submitSale() {
   var o = document.getElementById('io').value;
   var tgl = document.getElementById('it').value;
-  var exp = document.getElementById('ie').value;
   if (!o) { toast('Pilih outlet dulu'); return; }
   var cards = document.querySelectorAll('.item-card');
   if (!cards.length) { toast('Tambah minimal 1 produk'); return; }
   var items = [];
   var ok = true;
-  cards.forEach(function(c) {
+  var errMsg = '';
+  cards.forEach(function(c, i) {
     var d = gItem(c.id);
-    if (!d || !d.prod) { ok = false; return; }
+    if (!d || !d.prod) { ok = false; errMsg = 'Lengkapi nama produk #' + (i+1); return; }
+    if (!d.expired) { ok = false; errMsg = 'Isi expired produk #' + (i+1); return; }
     items.push(d);
   });
-  if (!ok) { toast('Lengkapi nama produk'); return; }
+  if (!ok) { toast(errMsg); return; }
   var tu = items.reduce(function(a, i) { return a + i.untungTotal; }, 0);
-  sales.unshift({ id:Date.now(), outlet:o, tanggal:tgl, expired:exp, items:items, totalUntung:tu });
+  sales.unshift({ id:Date.now(), outlet:o, tanggal:tgl, items:items, totalUntung:tu });
   sv();
   toast('Transaksi tersimpan!');
   document.getElementById('io').value = '';
-  document.getElementById('ie').value = '';
   document.getElementById('icards').innerHTML = '';
   updTtl();
   addItem();
@@ -424,14 +427,22 @@ function rHist() {
     return;
   }
   sl.innerHTML = fl.map(function(s) {
-    var ec = eCls(s.expired), el = eLbl(s.expired);
     var idx = sales.indexOf(s);
     var pn = (s.items || []).map(function(i) {
       return i.prod + (i.qty > 1 ? ' x' + i.qty : '');
     }).join(', ');
+    var anyExp = (s.items || []).some(function(i) { return i.expired; });
+    var worstCls = '';
+    if (anyExp) {
+      var cls = (s.items || []).map(function(i) { return eCls(i.expired); });
+      if (cls.indexOf('bred') >= 0) worstCls = 'bred';
+      else if (cls.indexOf('bwrn') >= 0) worstCls = 'bwrn';
+      else worstCls = 'bok';
+    }
+    var worstLbl = worstCls === 'bred' ? 'Ada yg kadaluarsa' : worstCls === 'bwrn' ? 'Segera exp' : worstCls === 'bok' ? 'OK' : '';
     return '<div class="scard" onclick="showDet(' + idx + ')">' +
       '<div class="sh"><div><div class="so">' + s.outlet + '</div><div class="sd">' + (s.tanggal || '-') + '</div></div>' +
-      (ec ? '<span class="bexp ' + ec + '">' + el + '</span>' : '') + '</div>' +
+      (worstCls ? '<span class="bexp ' + worstCls + '">' + worstLbl + '</span>' : '') + '</div>' +
       '<div class="sp">' + pn + '</div>' +
       '<div class="sf"><span class="spr">' + fmt(s.totalUntung) + '</span><span class="scnt">' + (s.items || []).length + ' produk</span></div>' +
       '</div>';
@@ -451,12 +462,10 @@ function showDet(idx) {
   if (!s) return;
   document.getElementById('mt').textContent = s.outlet + ' — ' + (s.tanggal || '-');
   var h = '';
-  if (s.expired) {
-    var ec = eCls(s.expired), el = eLbl(s.expired);
-    h += '<div class="mrow"><span class="mk">Expired</span><span>' + s.expired + ' <span class="bexp ' + ec + '">' + el + '</span></span></div>';
-  }
   (s.items || []).forEach(function(it, i) {
+    var ec = eCls(it.expired), el = eLbl(it.expired);
     h += '<div class="msep">Produk ' + (i+1) + ': ' + it.prod + '</div>';
+    h += '<div class="mrow"><span class="mk">Expired</span><span>' + (it.expired || '-') + (ec ? ' <span class="bexp ' + ec + '">' + el + '</span>' : '') + '</span></div>';
     h += '<div class="mrow"><span class="mk">HNA</span><span>' + fmt(it.hna) + '</span></div>';
     h += '<div class="mrow"><span class="mk">Diskon supplier</span><span>' + (it.dkPct||0) + '% (' + fmt(it.dkRp) + ')</span></div>';
     h += '<div class="mrow"><span class="mk">Modal/pcs</span><span>' + fmt(it.modal) + '</span></div>';
