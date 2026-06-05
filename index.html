@@ -70,7 +70,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .sr{display:flex;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--bdr);gap:8px}
 .sr:last-child{border-bottom:none}
 .srn{flex:1;font-size:13px}
-.btn-dls{background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;padding:3px 7px;border-radius:5px;background:var(--rbg)}
+.btn-dls{background:var(--rbg);border:none;color:var(--red);cursor:pointer;font-size:13px;padding:3px 7px;border-radius:5px}
 .btn-eh{background:var(--bbg);color:var(--blue);border:none;border-radius:6px;padding:3px 9px;font-size:12px;cursor:pointer;font-weight:600}
 .ehna{display:none;align-items:center;gap:7px;padding:5px 0}
 .ehna input{flex:1;padding:7px 9px;font-size:14px;border:0.5px solid var(--bdr2);border-radius:var(--r);background:var(--bg);color:var(--text)}
@@ -216,7 +216,7 @@ var hna = JSON.parse(localStorage.getItem('bjo_h') || JSON.stringify(DHNA));
 var aFilter = null;
 var curDIdx = null;
 
-function getPRODS() { return Object.keys(hna); }
+function getPRODS() { return Object.keys(hna).sort(); }
 
 function sv() {
   localStorage.setItem('bjo_o', JSON.stringify(outlets));
@@ -228,6 +228,13 @@ function sv() {
 function fmt(n) {
   if (n === null || n === undefined || isNaN(n)) return '-';
   return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+}
+
+function fmtDate(d) {
+  if (!d) return '-';
+  var p = d.split('-');
+  if (p.length !== 3) return d;
+  return p[2] + '/' + p[1] + '/' + p[0];
 }
 
 function sw(n) {
@@ -431,17 +438,16 @@ function rHist() {
     var pn = (s.items || []).map(function(i) {
       return i.prod + (i.qty > 1 ? ' x' + i.qty : '');
     }).join(', ');
-    var anyExp = (s.items || []).some(function(i) { return i.expired; });
     var worstCls = '';
-    if (anyExp) {
-      var cls = (s.items || []).map(function(i) { return eCls(i.expired); });
-      if (cls.indexOf('bred') >= 0) worstCls = 'bred';
-      else if (cls.indexOf('bwrn') >= 0) worstCls = 'bwrn';
-      else worstCls = 'bok';
-    }
+    (s.items || []).forEach(function(i) {
+      var c = eCls(i.expired);
+      if (c === 'bred') worstCls = 'bred';
+      else if (c === 'bwrn' && worstCls !== 'bred') worstCls = 'bwrn';
+      else if (c === 'bok' && worstCls === '') worstCls = 'bok';
+    });
     var worstLbl = worstCls === 'bred' ? 'Ada yg kadaluarsa' : worstCls === 'bwrn' ? 'Segera exp' : worstCls === 'bok' ? 'OK' : '';
     return '<div class="scard" onclick="showDet(' + idx + ')">' +
-      '<div class="sh"><div><div class="so">' + s.outlet + '</div><div class="sd">' + (s.tanggal || '-') + '</div></div>' +
+      '<div class="sh"><div><div class="so">' + s.outlet + '</div><div class="sd">' + fmtDate(s.tanggal) + '</div></div>' +
       (worstCls ? '<span class="bexp ' + worstCls + '">' + worstLbl + '</span>' : '') + '</div>' +
       '<div class="sp">' + pn + '</div>' +
       '<div class="sf"><span class="spr">' + fmt(s.totalUntung) + '</span><span class="scnt">' + (s.items || []).length + ' produk</span></div>' +
@@ -460,7 +466,7 @@ function showDet(idx) {
   curDIdx = idx;
   var s = sales[idx];
   if (!s) return;
-  document.getElementById('mt').textContent = s.outlet + ' — ' + (s.tanggal || '-');
+  document.getElementById('mt').textContent = s.outlet + ' — ' + fmtDate(s.tanggal);
   var h = '';
   (s.items || []).forEach(function(it, i) {
     var ec = eCls(it.expired), el = eLbl(it.expired);
