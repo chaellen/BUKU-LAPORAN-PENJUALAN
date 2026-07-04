@@ -16,9 +16,9 @@
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px}
 .app{max-width:430px;margin:0 auto;height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .tab-bar{display:flex;border-bottom:0.5px solid var(--bdr);background:var(--bg);flex-shrink:0;z-index:20}
-.tab{flex:1;padding:10px 4px 8px;text-align:center;font-size:11px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;user-select:none}
+.tab{flex:1;padding:10px 2px 8px;text-align:center;font-size:10px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;user-select:none}
 .tab.active{color:var(--text);border-bottom-color:var(--text);font-weight:600}
-.tab-icon{display:block;font-size:18px;margin-bottom:2px}
+.tab-icon{display:block;font-size:17px;margin-bottom:2px}
 .panels{flex:1;overflow:hidden}
 .panel{display:none;height:100%;overflow-y:auto;padding:14px 12px 40px;-webkit-overflow-scrolling:touch}
 .panel.active{display:block}
@@ -84,6 +84,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .btn-backup{width:100%;padding:11px;background:var(--bbg);color:var(--blue);border:0.5px solid var(--blue);border-radius:var(--r);font-size:14px;cursor:pointer;font-weight:600;margin-bottom:8px}
 .btn-restore{width:100%;padding:11px;background:var(--gbg);color:var(--green);border:0.5px solid var(--green);border-radius:var(--r);font-size:14px;cursor:pointer;font-weight:600}
 .backup-info{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px;background:var(--bg2);border-radius:var(--r);padding:10px}
+.an-card{background:var(--bg);border:0.5px solid var(--bdr);border-radius:var(--rl);padding:12px;margin-bottom:10px}
+.an-title{font-weight:600;font-size:13px;margin-bottom:8px}
+.an-mrow{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0;border-bottom:0.5px solid var(--bdr)}
+.an-mrow:last-child{border-bottom:none}
+.an-mk{color:var(--text2)}
+.an-mv{font-weight:600}
+.an-mc{color:var(--text3);font-size:11px;margin-left:6px;font-weight:400}
+.an-sum{display:flex;justify-content:space-between;border-top:1px solid var(--bdr2);margin-top:8px;padding-top:8px;font-size:12px;font-weight:600}
 .mwrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;align-items:flex-end;justify-content:center}
 .mwrap.open{display:flex}
 .msheet{background:var(--bg);border-radius:18px 18px 0 0;padding:14px 15px 36px;width:100%;max-width:430px;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -115,6 +123,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   <div class="tab-bar">
     <div class="tab active" onclick="sw('input')" id="tab-input"><span class="tab-icon">+</span>Input</div>
     <div class="tab" onclick="sw('history')" id="tab-history"><span class="tab-icon">&#9776;</span>Riwayat</div>
+    <div class="tab" onclick="sw('analisa')" id="tab-analisa"><span class="tab-icon">&#128200;</span>Analisa</div>
     <div class="tab" onclick="sw('settings')" id="tab-settings"><span class="tab-icon">&#9881;</span>Data</div>
   </div>
   <div class="panels">
@@ -137,11 +146,18 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div class="hf" id="hf"></div>
       <div id="slist"></div>
     </div>
+    <div class="panel" id="panel-analisa">
+      <p class="sec-title">Rata-rata diskon ke outlet per produk</p>
+      <div class="backup-info">
+        Rekap otomatis dari riwayat. Setiap produk menampilkan rata-rata % diskon ke outlet, dikelompokkan per <b>sisa bulan expired</b> (1 s/d 12 bulan, dan di atas 12 bulan). Data dengan diskon 100% tidak dihitung. Angka dalam kurung = jumlah transaksi.
+      </div>
+      <div id="analist"></div>
+    </div>
     <div class="panel" id="panel-settings">
       <div class="ss">
         <p class="sec-title">Backup &amp; Restore Data</p>
         <div class="backup-info">
-          <b>Penting:</b> Lakukan backup rutin! Tombol Backup akan menyimpan file berisi semua transaksi &amp; pengaturan ke folder Download HP/PC kamu. Jika data hilang (misal setelah hapus cache), gunakan Restore untuk memulihkannya dari file backup.
+          <b>Penting:</b> Lakukan backup rutin! File tersimpan ke folder Download. Gunakan Restore untuk memulihkan data dari file backup.
         </div>
         <button class="btn-backup" onclick="backupData()">&#11015; Backup Data (Download File)</button>
         <button class="btn-restore" onclick="document.getElementById('restore-file').click()">&#11014; Restore Data (Pilih File Backup)</button>
@@ -269,7 +285,7 @@ function restoreData(input) {
         toast('File backup tidak valid');
         return;
       }
-      if (!window.confirm('Restore akan menggantikan semua data saat ini dengan data dari file backup. Lanjutkan?')) {
+      if (!window.confirm('Restore akan menggantikan semua data saat ini. Lanjutkan?')) {
         input.value = '';
         return;
       }
@@ -306,9 +322,7 @@ function sisaBulan(tanggalTrx, expired) {
   if (!tanggalTrx || !expired) return null;
   var trx = new Date(tanggalTrx);
   var exp = new Date(expired + '-01');
-  var tahun = exp.getFullYear() - trx.getFullYear();
-  var bulan = exp.getMonth() - trx.getMonth();
-  return tahun * 12 + bulan;
+  return (exp.getFullYear() - trx.getFullYear()) * 12 + (exp.getMonth() - trx.getMonth());
 }
 
 function sisaBulanLabel(tanggalTrx, expired) {
@@ -333,6 +347,73 @@ function sw(n) {
   document.getElementById('panel-' + n).classList.add('active');
   if (n === 'history') rHist();
   if (n === 'settings') rSet();
+  if (n === 'analisa') rAnalisa();
+}
+
+// ===== ANALISA =====
+// Bucket 1..12 = sisa bulan tepat, bucket 13 = di atas 12 bulan
+function rAnalisa() {
+  var el = document.getElementById('analist');
+  if (!sales.length) {
+    el.innerHTML = '<div class="empty">Belum ada data transaksi untuk dianalisa</div>';
+    return;
+  }
+  var agg = {};
+  sales.forEach(function(s) {
+    (s.items || []).forEach(function(it) {
+      if (!it.prod) return;
+      var pct = it.pctDk;
+      if (pct === undefined || pct === null || isNaN(pct) || pct === 0) return;
+      if (pct >= 100) return; // kecualikan diskon 100%
+      var sisa = sisaBulan(s.tanggal, it.expired);
+      if (sisa === null || sisa <= 0) return;
+      var bucket = sisa > 12 ? 13 : sisa; // 1..12 atau 13 (>12)
+      if (!agg[it.prod]) {
+        agg[it.prod] = {};
+        for (var b = 1; b <= 13; b++) agg[it.prod][b] = {sum:0, cnt:0};
+      }
+      agg[it.prod][bucket].sum += pct;
+      agg[it.prod][bucket].cnt += 1;
+    });
+  });
+
+  var prods = Object.keys(agg).sort();
+  if (!prods.length) {
+    el.innerHTML = '<div class="empty">Belum ada data diskon yang bisa dianalisa</div>';
+    return;
+  }
+
+  var html = '';
+  prods.forEach(function(p) {
+    var b = agg[p];
+    var rows = '';
+    var totSum = 0, totCnt = 0;
+    for (var m = 1; m <= 13; m++) {
+      var x = b[m];
+      if (x.cnt === 0) continue;
+      totSum += x.sum;
+      totCnt += x.cnt;
+      var label = m === 13 ? 'Di atas 12 bulan' : m + ' bulan';
+      var avg = (x.sum / x.cnt).toFixed(1) + '%';
+      rows += '<div class="an-mrow">' +
+        '<span class="an-mk">' + label + '<span class="an-mc">(' + x.cnt + 'x)</span></span>' +
+        '<span class="an-mv">' + avg + '</span>' +
+      '</div>';
+    }
+    if (totCnt === 0) return;
+    var avgAll = (totSum / totCnt).toFixed(1) + '%';
+    html += '<div class="an-card">' +
+      '<div class="an-title">' + p + '</div>' +
+      rows +
+      '<div class="an-sum"><span>Rata-rata keseluruhan</span><span>' + avgAll + '</span></div>' +
+    '</div>';
+  });
+
+  if (!html) {
+    el.innerHTML = '<div class="empty">Belum ada data diskon yang bisa dianalisa</div>';
+    return;
+  }
+  el.innerHTML = html;
 }
 
 function addItem() {
