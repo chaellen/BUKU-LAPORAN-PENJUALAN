@@ -32,7 +32,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .item-num{font-size:11px;font-weight:600;color:var(--text3)}
 .btn-del-item{background:var(--rbg);border:0.5px solid var(--red);color:var(--red);cursor:pointer;font-size:12px;padding:4px 10px;border-radius:6px;font-weight:600}
 .item-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.item-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .if label{font-size:11px;color:var(--text2);display:block;margin-bottom:3px}
 .if input,.if select{width:100%;padding:7px 9px;font-size:14px;border:0.5px solid var(--bdr2);border-radius:var(--r);background:var(--bg);color:var(--text);-webkit-appearance:none}
 .item-calc{background:var(--bg);border-radius:var(--r);padding:8px 10px;margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:3px 8px}
@@ -237,6 +236,32 @@ function fmtDate(d) {
   return p[2] + '/' + p[1] + '/' + p[0];
 }
 
+// Hitung sisa bulan dari tanggal transaksi ke expired
+function sisaBulan(tanggalTrx, expired) {
+  if (!tanggalTrx || !expired) return null;
+  var trx = new Date(tanggalTrx);
+  var exp = new Date(expired + '-01');
+  var tahun = exp.getFullYear() - trx.getFullYear();
+  var bulan = exp.getMonth() - trx.getMonth();
+  var total = tahun * 12 + bulan;
+  return total;
+}
+
+function sisaBulanLabel(tanggalTrx, expired) {
+  var sisa = sisaBulan(tanggalTrx, expired);
+  if (sisa === null) return '-';
+  if (sisa <= 0) return '0 bulan (kadaluarsa)';
+  return sisa + ' bulan';
+}
+
+function sisaBulanCls(tanggalTrx, expired) {
+  var sisa = sisaBulan(tanggalTrx, expired);
+  if (sisa === null) return '';
+  if (sisa <= 0) return 'bred';
+  if (sisa <= 3) return 'bwrn';
+  return 'bok';
+}
+
 function sw(n) {
   document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
   document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
@@ -401,19 +426,6 @@ function submitSale() {
   addItem();
 }
 
-function eCls(e) {
-  if (!e) return '';
-  var d = new Date(e + '-01'), n = new Date();
-  var df = (d - n) / (864e5 * 30);
-  return df < 0 ? 'bred' : df < 3 ? 'bwrn' : 'bok';
-}
-function eLbl(e) {
-  if (!e) return '';
-  var d = new Date(e + '-01'), n = new Date();
-  var df = (d - n) / (864e5 * 30);
-  return df < 0 ? 'Kadaluarsa' : df < 3 ? 'Segera exp' : 'OK';
-}
-
 function rHist() {
   var fl = aFilter ? sales.filter(function(s) { return s.outlet === aFilter; }) : sales;
   var tu = fl.reduce(function(a, s) { return a + (s.totalUntung || 0); }, 0);
@@ -440,12 +452,12 @@ function rHist() {
     }).join(', ');
     var worstCls = '';
     (s.items || []).forEach(function(i) {
-      var c = eCls(i.expired);
+      var c = sisaBulanCls(s.tanggal, i.expired);
       if (c === 'bred') worstCls = 'bred';
       else if (c === 'bwrn' && worstCls !== 'bred') worstCls = 'bwrn';
       else if (c === 'bok' && worstCls === '') worstCls = 'bok';
     });
-    var worstLbl = worstCls === 'bred' ? 'Ada yg kadaluarsa' : worstCls === 'bwrn' ? 'Segera exp' : worstCls === 'bok' ? 'OK' : '';
+    var worstLbl = worstCls === 'bred' ? 'Kadaluarsa' : worstCls === 'bwrn' ? 'Segera exp' : worstCls === 'bok' ? 'OK' : '';
     return '<div class="scard" onclick="showDet(' + idx + ')">' +
       '<div class="sh"><div><div class="so">' + s.outlet + '</div><div class="sd">' + fmtDate(s.tanggal) + '</div></div>' +
       (worstCls ? '<span class="bexp ' + worstCls + '">' + worstLbl + '</span>' : '') + '</div>' +
@@ -469,9 +481,11 @@ function showDet(idx) {
   document.getElementById('mt').textContent = s.outlet + ' — ' + fmtDate(s.tanggal);
   var h = '';
   (s.items || []).forEach(function(it, i) {
-    var ec = eCls(it.expired), el = eLbl(it.expired);
+    var sisa = sisaBulan(s.tanggal, it.expired);
+    var sisaLabel = sisaBulanLabel(s.tanggal, it.expired);
+    var cls = sisaBulanCls(s.tanggal, it.expired);
     h += '<div class="msep">Produk ' + (i+1) + ': ' + it.prod + '</div>';
-    h += '<div class="mrow"><span class="mk">Expired</span><span>' + (it.expired || '-') + (ec ? ' <span class="bexp ' + ec + '">' + el + '</span>' : '') + '</span></div>';
+    h += '<div class="mrow"><span class="mk">Sisa expired</span><span>' + sisaLabel + (cls ? ' <span class="bexp ' + cls + '">' + (cls === 'bred' ? 'Kadaluarsa' : cls === 'bwrn' ? 'Segera exp' : 'OK') + '</span>' : '') + '</span></div>';
     h += '<div class="mrow"><span class="mk">HNA</span><span>' + fmt(it.hna) + '</span></div>';
     h += '<div class="mrow"><span class="mk">Diskon supplier</span><span>' + (it.dkPct||0) + '% (' + fmt(it.dkRp) + ')</span></div>';
     h += '<div class="mrow"><span class="mk">Modal/pcs</span><span>' + fmt(it.modal) + '</span></div>';
