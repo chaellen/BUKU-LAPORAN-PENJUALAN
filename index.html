@@ -81,6 +81,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 .add-prod-form{display:none;flex-direction:column;gap:7px;margin-top:8px}
 .add-prod-form input{width:100%;padding:8px 10px;font-size:14px;border:0.5px solid var(--bdr2);border-radius:var(--r);background:var(--bg);color:var(--text)}
 .add-prod-form button{padding:9px;background:var(--text);color:var(--bg);border:none;border-radius:var(--r);font-size:13px;cursor:pointer;font-weight:600}
+.btn-backup{width:100%;padding:11px;background:var(--bbg);color:var(--blue);border:0.5px solid var(--blue);border-radius:var(--r);font-size:14px;cursor:pointer;font-weight:600;margin-bottom:8px}
+.btn-restore{width:100%;padding:11px;background:var(--gbg);color:var(--green);border:0.5px solid var(--green);border-radius:var(--r);font-size:14px;cursor:pointer;font-weight:600}
+.backup-info{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px;background:var(--bg2);border-radius:var(--r);padding:10px}
 .mwrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;align-items:flex-end;justify-content:center}
 .mwrap.open{display:flex}
 .msheet{background:var(--bg);border-radius:18px 18px 0 0;padding:14px 15px 36px;width:100%;max-width:430px;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -135,6 +138,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div id="slist"></div>
     </div>
     <div class="panel" id="panel-settings">
+      <div class="ss">
+        <p class="sec-title">Backup &amp; Restore Data</p>
+        <div class="backup-info">
+          <b>Penting:</b> Lakukan backup rutin! Tombol Backup akan menyimpan file berisi semua transaksi &amp; pengaturan ke folder Download HP/PC kamu. Jika data hilang (misal setelah hapus cache), gunakan Restore untuk memulihkannya dari file backup.
+        </div>
+        <button class="btn-backup" onclick="backupData()">&#11015; Backup Data (Download File)</button>
+        <button class="btn-restore" onclick="document.getElementById('restore-file').click()">&#11014; Restore Data (Pilih File Backup)</button>
+        <input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreData(this)">
+      </div>
       <div class="ss">
         <p class="sec-title">Outlet</p>
         <div id="olist"></div>
@@ -224,6 +236,60 @@ function sv() {
   localStorage.setItem('bjo_h', JSON.stringify(hna));
 }
 
+function backupData() {
+  var data = {
+    versi: 1,
+    tanggalBackup: new Date().toISOString(),
+    outlets: outlets,
+    discounts: discs,
+    sales: sales,
+    hna: hna
+  };
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var tgl = new Date().toISOString().split('T')[0];
+  a.href = url;
+  a.download = 'backup-buku-jual-' + tgl + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Backup berhasil didownload!');
+}
+
+function restoreData(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!data.sales || !data.hna) {
+        toast('File backup tidak valid');
+        return;
+      }
+      if (!window.confirm('Restore akan menggantikan semua data saat ini dengan data dari file backup. Lanjutkan?')) {
+        input.value = '';
+        return;
+      }
+      outlets = data.outlets || outlets;
+      discs = data.discounts || discs;
+      sales = data.sales || [];
+      hna = data.hna || hna;
+      sv();
+      popO();
+      rSet();
+      toast('Data berhasil dipulihkan!');
+      input.value = '';
+    } catch (err) {
+      toast('Gagal membaca file backup');
+      input.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
 function fmt(n) {
   if (n === null || n === undefined || isNaN(n)) return '-';
   return 'Rp ' + Math.round(n).toLocaleString('id-ID');
@@ -236,15 +302,13 @@ function fmtDate(d) {
   return p[2] + '/' + p[1] + '/' + p[0];
 }
 
-// Hitung sisa bulan dari tanggal transaksi ke expired
 function sisaBulan(tanggalTrx, expired) {
   if (!tanggalTrx || !expired) return null;
   var trx = new Date(tanggalTrx);
   var exp = new Date(expired + '-01');
   var tahun = exp.getFullYear() - trx.getFullYear();
   var bulan = exp.getMonth() - trx.getMonth();
-  var total = tahun * 12 + bulan;
-  return total;
+  return tahun * 12 + bulan;
 }
 
 function sisaBulanLabel(tanggalTrx, expired) {
@@ -481,7 +545,6 @@ function showDet(idx) {
   document.getElementById('mt').textContent = s.outlet + ' — ' + fmtDate(s.tanggal);
   var h = '';
   (s.items || []).forEach(function(it, i) {
-    var sisa = sisaBulan(s.tanggal, it.expired);
     var sisaLabel = sisaBulanLabel(s.tanggal, it.expired);
     var cls = sisaBulanCls(s.tanggal, it.expired);
     h += '<div class="msep">Produk ' + (i+1) + ': ' + it.prod + '</div>';
